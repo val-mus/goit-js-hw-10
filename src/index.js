@@ -1,11 +1,75 @@
 import './css/styles.css';
-
-function fetchCountries(name) {
-  return fetch(`https://restcountries.com/v3.1/name/${name}`)
-    .then(response => response.json())
-    .then(data => console.log(data));
-}
-
-fetchCountries('uk');
+import debounce from 'lodash.debounce';
+import Notiflix from 'notiflix';
+import fetchCountries from './Js/fetchCountries';
 
 const DEBOUNCE_DELAY = 300;
+
+const getEl = element => document.querySelector(element);
+
+const countryList = getEl('.country-list');
+const countryInfo = getEl('.country-info');
+
+const userInputField = getEl('#search-box');
+
+userInputField.addEventListener('input', debounce(onUserInput, DEBOUNCE_DELAY));
+
+function onUserInput(e) {
+  let userInput = e.target.value.trim();
+
+  if (userInput === '') {
+    countryList.innerHTML = '';
+    countryInfo.innerHTML = '';
+    return;
+  }
+
+  fetchCountries(userInput).then(data => {
+    if (data.length > 10) {
+      countryList.innerHTML = '';
+      countryInfo.innerHTML = '';
+      Notiflix.Notify.info(
+        'Too many matches found. Please enter a more specific name.'
+      );
+      return;
+    } else if (data.length === 1) {
+      const markup = `<li class = "country-list__item">
+      <img class="country-list__icon" src="${data[0].flags.svg}" alt="${data[0].name.official}">
+      <p class="country-list__name accent">${data[0].name.official}</p>
+      </li>`;
+
+      const descMarkup = `<ul>
+      <li class = "country-info__desc"><b>Capital: </b>${data[0].capital}</li>
+      <li class = "country-info__desc"><b>Population: </b>${
+        data[0].population
+      } </li>
+      <li class = "country-info__desc"><b>Languages: </b>${Object.values(
+        data[0].languages
+      )}</li>
+    </ul>`;
+
+      countryList.innerHTML = markup;
+      countryInfo.innerHTML = descMarkup;
+    } else {
+      const markup = data
+        .sort(function (a, b) {
+          if (a.name.common > b.name.common) {
+            return 1;
+          }
+          if (a.name.common < b.name.common) {
+            return -1;
+          }
+          return 0;
+        })
+        .map(
+          item => `<li class = "country-list__item">
+    <img class=country-list__icon src="${item.flags.svg}" alt="Flag of the ${item.name.official}">
+    <p class=country-list__name >${item.name.common}</p>
+    </li>`
+        )
+        .join('');
+
+      countryList.innerHTML = markup;
+      countryInfo.innerHTML = '';
+    }
+  });
+}
