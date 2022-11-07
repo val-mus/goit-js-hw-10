@@ -1,7 +1,9 @@
 import './css/styles.css';
 import debounce from 'lodash.debounce';
+
 import Notiflix from 'notiflix';
-import fetchCountries from './Js/fetchCountries';
+
+import fetchCountries from './fetchCountries';
 
 const DEBOUNCE_DELAY = 300;
 
@@ -62,9 +64,9 @@ function onUserInput(e) {
         })
         .map(
           item => `<li class = "country-list__item">
-    <img class=country-list__icon src="${item.flags.svg}" alt="Flag of the ${item.name.official}">
-    <p class=country-list__name >${item.name.common}</p>
-    </li>`
+                  <img class=country-list__icon src="${item.flags.svg}" alt="Flag of the ${item.name.official}">
+                  <p class=country-list__name >${item.name.common}</p>
+                  </li>`
         )
         .join('');
 
