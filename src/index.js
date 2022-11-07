@@ -5,7 +5,7 @@ import Notiflix from 'notiflix';
 
 import fetchCountries from './fetchCountries';
 
-const DEBOUNCE_DELAY = 300;
+const DEBOUNCE_DELAY = 1000;
 
 const getEl = element => document.querySelector(element);
 
@@ -16,26 +16,29 @@ const userInputField = getEl('#search-box');
 
 userInputField.addEventListener('input', debounce(onUserInput, DEBOUNCE_DELAY));
 
+function changeInterface(markup, descMarkup) {
+  countryList.innerHTML = markup;
+  countryInfo.innerHTML = descMarkup;
+}
+
 function onUserInput(e) {
   let userInput = e.target.value.trim();
 
   if (userInput === '') {
-    countryList.innerHTML = '';
-    countryInfo.innerHTML = '';
+    changeInterface('', '');
     return;
   }
 
   fetchCountries(userInput).then(data => {
     if (data.length > 10) {
-      countryList.innerHTML = '';
-      countryInfo.innerHTML = '';
+      changeInterface('', '');
       Notiflix.Notify.info(
         'Too many matches found. Please enter a more specific name.'
       );
       return;
     } else if (data.length === 1) {
       const markup = `<li class = "country-list__item">
-      <img class="country-list__icon" src="${data[0].flags.svg}" alt="${data[0].name.official}">
+      <img class="country-list__icon" src="${data[0].flags.svg}" alt="${data[0].name.common}">
       <p class="country-list__name accent">${data[0].name.official}</p>
       </li>`;
 
@@ -48,9 +51,7 @@ function onUserInput(e) {
         data[0].languages
       )}</li>
     </ul>`;
-
-      countryList.innerHTML = markup;
-      countryInfo.innerHTML = descMarkup;
+      changeInterface(markup, descMarkup);
     } else {
       const markup = data
         .sort(function (a, b) {
@@ -64,14 +65,12 @@ function onUserInput(e) {
         })
         .map(
           item => `<li class = "country-list__item">
-                  <img class=country-list__icon src="${item.flags.svg}" alt="Flag of the ${item.name.official}">
+                  <img class=country-list__icon src="${item.flags.svg}" alt="Flag of the ${item.name.common}">
                   <p class=country-list__name >${item.name.common}</p>
                   </li>`
         )
         .join('');
-
-      countryList.innerHTML = markup;
-      countryInfo.innerHTML = '';
+      changeInterface(markup, '');
     }
   });
 }
