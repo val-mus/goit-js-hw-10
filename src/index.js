@@ -28,10 +28,11 @@ function onUserInput(e) {
     changeInterface('', '');
     return;
   }
-
   fetchCountries(userInput)
     .then(data => {
-      if (data.length > 10) {
+      if (data.length === undefined) {
+        return;
+      } else if (data.length > 10) {
         changeInterface('', '');
         Notiflix.Notify.info(
           'Too many matches found. Please enter a more specific name.'
